@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>雾岛档案 · AI NPC 剧本游戏</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --panel: rgba(20, 28, 39, .88);
+      --panel-2: #182331;
+      --line: rgba(255,255,255,.09);
+      --text: #e9eef5;
+      --muted: #8e9caf;
+      --cyan: #74d4d5;
+      --gold: #e9ba77;
+      --danger: #e88e9f;
+      --shadow: 0 18px 60px rgba(0,0,0,.28);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; color: var(--text);
+      background: radial-gradient(circle at 78% 4%, rgba(74, 135, 151, .2), transparent 31%),
+                  radial-gradient(circle at 10% 90%, rgba(111, 73, 118, .16), transparent 34%), var(--bg);
+      font: 15px/1.6 Inter, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    .shell { width: min(1440px, calc(100% - 36px)); margin: 0 auto; padding: 28px 0 38px; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:24px; }
+    .brand { display:flex; align-items:center; gap:13px; }
+    .mark { width:42px; height:42px; border-radius:14px; display:grid; place-items:center; color:#102126; background:linear-gradient(145deg, #a8eded, #70c3d0); font-weight:800; box-shadow:0 7px 26px rgba(116,212,213,.2); }
+    h1, h2, h3, p { margin:0; }
+    h1 { font-size:20px; letter-spacing:.02em; }
+    .subtitle { font-size:12px; color:var(--muted); margin-top:2px; }
+    .top-actions { display:flex; align-items:center; gap:10px; }
+    .pill { display:inline-flex; align-items:center; gap:7px; padding:7px 11px; border:1px solid var(--line); border-radius:999px; color:#b6c3d1; background:rgba(255,255,255,.035); font-size:12px; }
+    .dot { width:7px; height:7px; border-radius:50%; background:#79e0a1; box-shadow:0 0 12px #79e0a1; }
+    .layout { display:grid; grid-template-columns: 260px minmax(420px, 1fr) 300px; gap:16px; align-items:stretch; }
+    .panel { background:var(--panel); border:1px solid var(--line); border-radius:22px; box-shadow:var(--shadow); backdrop-filter: blur(14px); }
+    .side { padding:20px; }
+    .eyebrow { color:var(--cyan); font-size:11px; letter-spacing:.13em; text-transform:uppercase; margin-bottom:8px; }
+    .case-title { font-size:23px; line-height:1.25; margin-bottom:10px; }
+    .description { color:var(--muted); font-size:13px; }
+    .divider { height:1px; background:var(--line); margin:20px 0; }
+    .case-strip { margin-bottom:16px; padding:16px 18px; display:flex; align-items:center; gap:20px; }
+    .case-strip .eyebrow { margin:0 0 2px; }
+    .case-strip h2 { font-size:15px; white-space:nowrap; }
+    .case-tabs { display:flex; gap:9px; flex:1; overflow:auto; padding:2px 0; }
+    .case-tab { min-width:180px; text-align:left; border:1px solid var(--line); background:#151f2b; color:#b9c7d5; border-radius:14px; padding:10px 12px; transition:.2s; }
+    .case-tab strong { display:block; font-size:13px; color:#dfe8ef; }
+    .case-tab span { display:block; font-size:11px; color:var(--muted); margin-top:2px; }
+    .case-tab.active { border-color:rgba(116,212,213,.65); background:rgba(116,212,213,.1); box-shadow:0 0 0 3px rgba(116,212,213,.05); }
+    .model-badge { white-space:nowrap; color:#b9d9c7; border:1px solid rgba(121,224,161,.22); background:rgba(121,224,161,.06); padding:8px 10px; border-radius:11px; font-size:11px; }
+    .model-badge.local { color:#f0cc92; border-color:rgba(233,186,119,.3); background:rgba(233,186,119,.06); }
+    .phase { display:flex; align-items:center; gap:10px; margin:12px 0; color:var(--muted); font-size:13px; }
+    .phase i { width:22px; height:22px; border:1px solid #425265; color:#93a5b8; border-radius:50%; display:grid; place-items:center; font-style:normal; font-size:11px; }
+    .phase.active { color:var(--text); }
+    .phase.active i { color:#142324; background:var(--cyan); border-color:var(--cyan); }
+    .tip { padding:13px; color:#b8c5d2; font-size:12px; background:rgba(116,212,213,.06); border:1px solid rgba(116,212,213,.14); border-radius:14px; }
+    .center { display:flex; flex-direction:column; min-height:680px; overflow:hidden; }
+    .scene-head { padding:20px 22px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .scene-head h2 { font-size:16px; }
+    .scene-head p { color:var(--muted); font-size:12px; margin-top:3px; }
+    .chapter { color:var(--gold); font-size:12px; white-space:nowrap; }
+    .chat { padding:22px; flex:1; overflow:auto; max-height:470px; }
+    .message { display:flex; gap:11px; margin:0 0 18px; max-width:90%; animation:up .22s ease both; }
+    .message.user { margin-left:auto; flex-direction:row-reverse; }
+    .avatar { width:34px; height:34px; flex:none; border-radius:12px; display:grid; place-items:center; color:#18222b; font-weight:800; background:#adc6d9; }
+    .avatar.npc { background:linear-gradient(145deg, #e9ba77, #c88675); }
+    .bubble { padding:11px 14px; border:1px solid var(--line); border-radius:5px 16px 16px 16px; background:#17212d; color:#dae2ea; font-size:14px; }
+    .user .bubble { border-radius:16px 5px 16px 16px; background:#22414b; border-color:rgba(116,212,213,.17); }
+    .speaker { font-size:11px; color:var(--muted); margin-bottom:3px; }
+    .user .speaker { text-align:right; }
+    .quick { padding:0 22px 14px; display:flex; gap:8px; flex-wrap:wrap; }
+    .quick button, .choice { border:1px solid var(--line); background:#1a2634; color:#c5d2df; padding:8px 11px; border-radius:10px; font-size:12px; transition:.2s; }
+    .quick button:hover, .choice:hover { border-color:var(--cyan); color:var(--text); transform:translateY(-1px); }
+    .composer { padding:16px 22px 20px; border-top:1px solid var(--line); display:flex; gap:9px; }
+    .composer input { min-width:0; flex:1; border:1px solid var(--line); border-radius:13px; padding:12px 14px; outline:none; color:var(--text); background:#101923; }
+    .composer input:focus { border-color:rgba(116,212,213,.55); box-shadow:0 0 0 3px rgba(116,212,213,.08); }
+    .send { border:0; border-radius:13px; padding:0 17px; color:#102126; font-weight:700; background:var(--cyan); }
+    .right h3 { font-size:14px; margin-bottom:12px; }
+    .npc-card { display:flex; gap:11px; align-items:center; padding:11px 0; border-bottom:1px solid var(--line); }
+    .npc-card:last-child { border:0; }
+    .npc-card .avatar { width:30px; height:30px; border-radius:10px; font-size:12px; }
+    .npc-name { font-size:13px; }
+    .npc-role { color:var(--muted); font-size:11px; }
+    .meter { margin-left:auto; width:55px; height:5px; border-radius:99px; background:#293544; overflow:hidden; }
+    .meter b { display:block; height:100%; background:var(--gold); border-radius:99px; }
+    .clues { display:grid; gap:8px; }
+    .clue { padding:11px 12px; border:1px solid var(--line); border-radius:13px; background:rgba(255,255,255,.025); }
+    .clue strong { display:block; color:#f1d39f; font-size:12px; margin-bottom:3px; }
+    .clue span { color:var(--muted); font-size:11px; }
+    .clue.locked { opacity:.45; filter:grayscale(.6); }
+    .ending { display:none; margin:0 22px 18px; padding:16px; border-radius:15px; border:1px solid rgba(233,186,119,.3); background:rgba(233,186,119,.08); }
+    .ending.show { display:block; animation:up .25s ease both; }
+    .ending h3 { color:var(--gold); margin-bottom:6px; }
+    .ending p { color:#d0d8df; font-size:13px; }
+    .guess { margin-top:10px; display:flex; gap:7px; flex-wrap:wrap; }
+    .guess button { border:1px solid rgba(233,186,119,.32); background:transparent; color:#efd19e; padding:7px 10px; border-radius:9px; font-size:12px; }
+    .guess button:hover { background:rgba(233,186,119,.12); }
+    .foot { margin-top:18px; color:#718096; font-size:11px; text-align:center; }
+    @keyframes up { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+    @media (max-width: 1050px) { .layout { grid-template-columns:220px minmax(0,1fr); } .right { grid-column:1 / -1; display:grid; grid-template-columns:1fr 1fr; gap:18px; } }
+    @media (max-width: 700px) { .shell { width:calc(100% - 22px); padding-top:16px; } .top-actions .pill { display:none; } .layout { display:block; } .side, .right { margin-bottom:12px; } .right { display:block; } .center { min-height:700px; } .chat { max-height:520px; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand"><div class="mark">雾</div><div><h1>雾岛档案</h1><div class="subtitle">AI NPC 剧本游戏实验室 · 原创 Demo 01</div></div></div>
+      <div class="top-actions"><span class="pill"><i class="dot"></i>离线演示模式</span><span class="pill">案件进度 <b id="progress">1 / 4</b></span></div>
+    </header>
+
+    <section class="panel case-strip">
+      <div><div class="eyebrow">choose a case</div><h2>选择案件</h2></div>
+      <div class="case-tabs" id="caseTabs"></div>
+      <div class="model-badge" id="modelBadge">规则引擎 · 可玩</div>
+    </section>
+
+    <main class="layout">
+      <aside class="panel side">
+        <div class="eyebrow">case file 07</div>
+        <h2 class="case-title" id="caseTitle">第七份录音</h2>
+        <p class="description" id="caseDescription">暴雨封锁了雾岛。研究站的档案录音在停电后消失，三个人都说自己没有进入灯塔。</p>
+        <div class="divider"></div>
+        <div class="eyebrow">investigation</div>
+        <div class="phase active" id="phase1"><i>1</i>自由询问</div>
+        <div class="phase" id="phase2"><i>2</i>收集线索</div>
+        <div class="phase" id="phase3"><i>3</i>锁定嫌疑人</div>
+        <div class="phase" id="phase4"><i>4</i>提交结论</div>
+        <div class="divider"></div>
+        <div class="tip">提示：先询问 NPC，再点击下方快捷调查。出现足够线索后，可以在结论区选择你认为的嫌疑人。</div>
+      </aside>
+
+      <section class="panel center">
+        <div class="scene-head"><div><h2 id="sceneLocation">灯塔会客厅</h2><p id="sceneTime">21:52 · 停电后的第十二分钟</p></div><div class="chapter" id="sceneChapter">序章 / 访谈</div></div>
+        <div class="chat" id="chat"></div>
+        <div class="ending" id="ending"><h3 id="endingTitle"></h3><p id="endingText"></p><div class="guess" id="guessButtons"></div></div>
+        <div class="quick"><button data-action="key">检查生锈钥匙</button><button data-action="footprint">查看湿脚印</button><button data-action="log">核对渡船记录</button><button data-action="recorder">询问第七份录音</button></div>
+        <form class="composer" id="composer"><input id="input" autocomplete="off" placeholder="输入问题，例如：你在停电时在哪里？" /><button class="send">发送</button></form>
+      </section>
+
+      <aside class="panel side right">
+        <div><h3>NPC 档案</h3>
+          <div id="npcList"></div>
+        </div>
+        <div class="divider"></div>
+        <div><h3>线索笔记 <span id="clueCount" style="color:var(--gold);font-weight:400">0/4</span></h3><div class="clues" id="clues"></div></div>
+      </aside>
+    </main>
+    <div class="foot">本页面为原创剧情结构演示，AI 接入版将增加可配置的人设、记忆、知识权限和多结局。</div>
+  </div>
+  <script>
+    const SCENARIOS = {
+      mist: { title:'第七份录音', short:'暗凶推理 · 15 分钟', description:'暴雨封锁了雾岛。研究站的档案录音在停电后消失，三个人都说自己没有进入灯塔。', location:'灯塔会客厅', time:'21:52 · 停电后的第十二分钟', chapter:'序章 / 访谈', correct:'顾遥', intro:'暴雨把雾岛和大陆的航线切断了。你是临时调查员，今晚只能相信证据，也可以相信某个人。', npcs:[['顾遥','档案研究员 · 情绪紧绷',42],['林朔','灯塔管理员 · 沉默寡言',58],['程砚','纪录片导演 · 观察敏锐',66]], clues:[['key','生锈的黄铜钥匙','钥匙内侧刻着“观测室-07”，边缘有新鲜海盐。'],['footprint','窗边的湿脚印','鞋印从窗边延伸到观测室，鞋底缺了一角。'],['log','渡船值班记录','21:31 后没有渡船靠岸，但 21:44 有一次手写改动。'],['recorder','录音带标签','标签背面写着“不要让顾遥听见”，字迹属于程砚。']], actions:[['key','检查生锈钥匙'],['footprint','查看湿脚印'],['log','核对渡船记录'],['recorder','询问第七份录音']] },
+      station: { title:'未寄出的信', short:'情感路线 · 20 分钟', description:'雨夜车站里，一封没有寄出的信夹在旧票根中。三个人都在等同一个人，却没人愿意先说出名字。', location:'潮声车站 · 3 号站台', time:'23:08 · 末班车进站前', chapter:'第一幕 / 重逢', correct:'林澄', intro:'末班车还有十二分钟进站。你受托把一封信交给收信人，但信上的名字已经被雨水晕开。', npcs:[['林澄','花店主理人 · 克制温柔',54],['周野','摄影师 · 逃避型',38],['沈禾','列车员 · 记忆很好',72]], clues:[['ticket','半张旧车票','车票日期是七年前，终点站已经停运。'],['letter','没有寄出的信','信中反复出现“对不起”，落款只剩一个澄字。'],['clock','慢七分钟的站钟','站钟比手机时间慢七分钟，有人利用过这个误差。'],['photo','被剪掉一角的照片','照片中有四个人，第四个人被刻意剪掉。']], actions:[['ticket','查看旧车票'],['letter','展开那封信'],['clock','校对站钟时间'],['photo','观察旧照片']] },
+      apartment: { title:'404 室的回声', short:'密室调查 · 25 分钟', description:'老公寓的 404 室连续三晚传出敲墙声。门锁完好，住户却说自己从未听见。', location:'旧公寓 · 四楼走廊', time:'00:17 · 第三次敲墙后', chapter:'第二幕 / 回声', correct:'沈砚', intro:'物业把钥匙交给你。404 室没有人，却有一台亮着的收音机。敲墙声每隔 47 秒出现一次。', npcs:[['沈砚','维修工 · 过分热心',67],['唐梨','404 邻居 · 睡眠很浅',46],['陆闻','房东代理 · 语气官方',31]], clues:[['elevator','电梯维修单','维修单时间与敲墙声第一次出现的时间重合。'],['receipt','旧收据','收据背面写着“地下室 B-04”，签名是沈砚。'],['recording','收音机录音','噪音中混着三次短促的金属碰撞。'],['window','封死的窗缝','窗缝里有新鲜石灰粉，外侧没有攀爬痕迹。']], actions:[['elevator','查看电梯维修单'],['receipt','检查旧收据'],['recording','播放收音机'],['window','查看封死的窗缝']] }
+    };
+    const state = { scenario:'mist', clues:new Set(), asked:new Set(), selected:'顾遥', correct:'顾遥', history:[] };
+    let npc = {};
+    const chat = document.querySelector('#chat'); const input = document.querySelector('#input');
+    const scenario = () => SCENARIOS[state.scenario];
+    function addMessage(name, text, user=false) {
+      const item = document.createElement('div'); item.className = 'message' + (user ? ' user' : '');
+      item.innerHTML = `<div class="avatar ${user ? '' : 'npc'}">${user ? '我' : (npc[name] || '雾')}</div><div><div class="speaker">${name}</div><div class="bubble">${text}</div></div>`;
+      chat.appendChild(item); chat.scrollTop = chat.scrollHeight;
+    }
+    function renderCase() {
+      const s = scenario(); state.correct=s.correct; state.selected=s.npcs[0][0]; npc={}; s.npcs.forEach(x=>npc[x[0]]=x[0][0]);
+      document.querySelector('#caseTitle').textContent=s.title; document.querySelector('#caseDescription').textContent=s.description; document.querySelector('#sceneLocation').textContent=s.location; document.querySelector('#sceneTime').textContent=s.time; document.querySelector('#sceneChapter').textContent=s.chapter;
+      document.querySelector('#npcList').innerHTML=s.npcs.map(x=>`<div class="npc-card"><div class="avatar npc">${x[0][0]}</div><div><div class="npc-name">${x[0]}</div><div class="npc-role">${x[1]}</div></div><div class="meter"><b style="width:${x[2]}%"></b></div></div>`).join('');
+      document.querySelector('#clues').innerHTML=s.clues.map(x=>`<div class="clue locked" data-clue="${x[0]}"><strong>${x[1]}</strong><span>尚未调查</span></div>`).join('');
+      document.querySelector('#guessButtons').innerHTML=s.npcs.map(x=>`<button data-guess="${x[0]}">指认${x[0]}</button>`).join('');
+      document.querySelectorAll('[data-guess]').forEach(b=>b.addEventListener('click',()=>resolveGuess(b.dataset.guess)));
+      document.querySelector('.quick').innerHTML=s.actions.map(x=>`<button data-action="${x[0]}">${x[1]}</button>`).join('');
+      document.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',()=>investigate(b.dataset.action)));
+      document.querySelector('#ending').classList.remove('show'); document.querySelector('#endingTitle').textContent=''; document.querySelector('#endingText').textContent='';
+      chat.innerHTML=''; addMessage('系统',s.intro); addMessage(s.npcs[0][0],opening(s.npcs[0][0]));
+      updateProgress();
+    }
+    function renderTabs() { document.querySelector('#caseTabs').innerHTML=Object.entries(SCENARIOS).map(([id,s])=>`<button class="case-tab ${id===state.scenario?'active':''}" data-scenario="${id}"><strong>${s.title}</strong><span>${s.short}</span></button>`).join(''); document.querySelectorAll('[data-scenario]').forEach(b=>b.addEventListener('click',()=>{state.scenario=b.dataset.scenario;state.clues=new Set();state.asked=new Set();renderTabs();renderCase();})); }
+    function opening(name) { if(state.scenario==='station') return name==='林澄'?'我没想到你会在这里。那封信……已经没有必要寄出去了。':'你也在等车？'; if(state.scenario==='apartment') return name==='沈砚'?'404 的门锁没坏，真正坏掉的是里面的线路。':'这里没有什么异常，别把普通的声音想得太复杂。'; return name==='顾遥'?'如果你是来找录音的，我建议你先问林朔。灯塔的每一把钥匙，都经过他的手。':'今晚的风很大，很多声音都会被误认成证词。'; }
+    function updateProgress() {
+      const n = state.clues.size;
+      document.querySelector('#clueCount').textContent = `${n}/4`;
+      document.querySelector('#progress').textContent = `${Math.min(n + 1, 4)} / 4`;
+      ['phase1','phase2','phase3','phase4'].forEach((id, i) => document.querySelector('#'+id).classList.toggle('active', i === Math.min(n, 3)));
+      if (n >= 2) document.querySelector('#ending').classList.add('show');
+    }
+    function unlock(key, note) {
+      if (state.clues.has(key)) return;
+      state.clues.add(key);
+      const el = document.querySelector(`[data-clue="${key}"]`); if(!el) return; el.classList.remove('locked'); el.querySelector('span').textContent = note;
+      updateProgress();
+    }
+    function investigate(action) {
+      const item=scenario().clues.find(x=>x[0]===action); if(!item) return; unlock(action,item[2]); addMessage('系统',item[2]);
+    }
+    function localReply(text) { const s=scenario(), q=text.toLowerCase(); let name=state.selected; s.npcs.forEach(x=>{if(q.includes(x[0])||q.includes(x[1].split('·')[0])) name=x[0];}); state.selected=name; state.asked.add(name); let a='';
+      if(state.scenario==='mist') { if(name==='顾遥') a=q.includes('录音')?'第七份录音不该被拿出来。那里面有我父亲留下的声音，程砚知道。':'停电时我在厨房找蜡烛……好吧，我确实去过灯塔，但没有打开观测室的门。'; if(name==='林朔') a=q.includes('钥匙')?'档案室钥匙在我这里，备用钥匙在观测室门边。':'停电后我一直在大厅。湿脚印可能是雨水，也可能是有人走过。'; if(name==='程砚') a=q.includes('录音')?'标签是我写的，但我没有拿走录音。顾遥不想让任何人听见它。':'我来这里拍摄灯塔。顾遥很紧张，但紧张不等于撒谎。'; }
+      if(state.scenario==='station') { if(name==='林澄') a=q.includes('信')?'我写信不是为了挽回谁，只是想让他知道，当年我没有真正离开。':'末班车还有十二分钟，我不想再错过一次。'; if(name==='周野') a=q.includes('照片')?'照片里被剪掉的人，是我不敢面对的人。林澄知道答案。':'我只是来拍照，别把等待说成承诺。'; if(name==='沈禾') a='我记得七年前的车次。那天有人提前七分钟上车，站钟后来才慢下来。'; }
+      if(state.scenario==='apartment') { if(name==='沈砚') a=q.includes('地下室')?'B-04 只是维修编号，你不该从收据背面看到它。':'线路老化会产生声音，我来这里是帮忙。'; if(name==='唐梨') a=q.includes('声音')?'我听见的不是敲墙，更像有人用金属敲管道。沈砚每次都比我早知道。':'我住在 405，晚上不敢开灯。'; if(name==='陆闻') a='房东只负责门锁，不负责住户的想象。404 室已经空了三个月。'; }
+      return a||'我暂时不想回答这个问题。你可以换一种问法，或者先调查现场。'; }
+    async function reply(text) { const s=scenario(), q=text.trim(); let answer=''; let name=state.selected; s.npcs.forEach(x=>{if(q.includes(x[0])) name=x[0];}); state.selected=name; state.asked.add(name); state.history.push({role:'user',content:q});
+      try { const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario:state.scenario,npc:name,question:q,clues:[...state.clues],history:state.history.slice(-8),profile:s.npcs.find(x=>x[0]===name)})}); const data=await r.json(); if(data.ok&&data.answer){answer=data.answer;document.querySelector('#modelBadge').textContent='本地小模型 · 已接入';document.querySelector('#modelBadge').classList.add('local');} } catch(e) {}
+      if(!answer) { answer=localReply(q); document.querySelector('#modelBadge').textContent='规则引擎 · 可玩'; }
+      state.history.push({role:'assistant',content:answer}); addMessage(name,answer); if(state.asked.size>=2&&s.clues[1]) unlock(s.clues[1][0],s.clues[1][2]); }
+    document.querySelectorAll('[data-action]').forEach(b => b.addEventListener('click', () => investigate(b.dataset.action)));
+    function resolveGuess(pick) { const ending=document.querySelector('#endingTitle'), text=document.querySelector('#endingText'); if(state.clues.size<2){ending.textContent='线索还不够';text.textContent='至少收集两条线索，再提交你的判断。';return;} if(pick===state.correct){ending.textContent='结局：推理成立';text.textContent=`你选择了${pick}。现有证据支持这条路线，但案件还可以继续扩写为多结局剧本。`;}else{ending.textContent='结局：证据不足';text.textContent=`${pick}存在疑点，但当前线索还不能完成闭环。继续询问 NPC 或调查现场。`;}}
+    document.querySelector('#composer').addEventListener('submit', e => { e.preventDefault(); const text=input.value.trim(); if(!text)return; addMessage('我',text,true); input.value=''; setTimeout(()=>reply(text),160); });
+    renderTabs(); renderCase();
+  </script>
+</body>
+</html>
