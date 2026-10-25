@@ -29,9 +29,11 @@ async function ask(q){
  add('我',q,true);$('#modelBadge').textContent='正在回应…';
  const result=await conversation.request({scenario:'liufang',scene:state.scene,npc:id,listener,question:q,clues:[]},()=>fallback(q));
  if(!result)return;
- $('#modelBadge').textContent=result.mode;bonds[pair]=Math.min(99,(bonds[pair]||50)+Mystery.award(pair,q));renderNPCs();add(n,result.answer);toast(`${n}对${listener}的关系温度：${bonds[pair]}`);
+ $('#modelBadge').textContent=result.mode;bonds[pair]=Math.min(99,(bonds[pair]||50)+Mystery.award(pair,q));renderNPCs();add(n,result.answer);Investigation.record(n,result.answer,result.mode);toast(`${n}对${listener}的关系温度：${bonds[pair]}`);
 }
 function render(){conversation.activate(`liufang|${state.scene}|${state.speaker}|${state.listener}`);const s=SCENES[state.scene];$('#sceneTitle').textContent=`${s.phase} · ${s.title}`;$('#sceneDesc').textContent=s.desc;$('#phaseText').textContent=s.phase;$('#quick').innerHTML=s.quick.map(q=>`<button data-q="${esc(q)}">${esc(q)}</button>`).join('');document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>ask(b.dataset.q));renderFlow();renderSelects();renderNPCs();renderRelations();$('#chat').innerHTML='';add('系统',`你进入${s.phase}。${s.desc}`);add(NPCS[state.speaker].name,opening())}
 $('#composer').onsubmit=e=>{e.preventDefault();const q=$('#input').value.trim();if(q){$('#input').value='';ask(q)}};render();
 
 Mystery.status($('#modelBadge'));
+
+Investigation.register({snapshot:()=>({key:'liufang',title:'流芳',phase:SCENES[state.scene].phase+' · '+SCENES[state.scene].title,clues:[]})});

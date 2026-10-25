@@ -158,7 +158,7 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json(200, {"ok": True, "ollama": available, "model": MODEL})
             return
         name = "index.html" if path == "/" else path.lstrip("/")
-        allowed = {"index.html", "liufang.html", "ye-pusa.html", "common.js", "index.js", "liufang.js", "ye-pusa.js", "catalog.js"}
+        allowed = {"index.html", "liufang.html", "ye-pusa.html", "common.js", "index.js", "liufang.js", "ye-pusa.js", "catalog.js", "investigation.js", "design.css"}
         if name not in allowed or path.count("/") > 1:
             self.send_json(404, {"ok": False, "error": "页面不存在"})
             return
@@ -166,7 +166,7 @@ class Handler(BaseHTTPRequestHandler):
         raw = file.read_bytes()
         self.send_response(200)
         self.headers_common()
-        self.send_header("Content-Type", "text/javascript; charset=utf-8" if name.endswith(".js") else "text/html; charset=utf-8")
+        self.send_header("Content-Type", "text/javascript; charset=utf-8" if name.endswith(".js") else "text/css; charset=utf-8" if name.endswith(".css") else "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(raw)))
         self.end_headers()
         self.wfile.write(raw)

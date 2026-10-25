@@ -14,10 +14,12 @@ async function ask(q){
  const id=state.current,p=PEOPLE[id];add('我',q,true);document.querySelector('#modelBadge').textContent='正在回应…';
  const result=await conversation.request({scenario:'yepusa',scene:state.scene,npc:id,listener:'玩家',question:q,clues:[]},()=>fallback(q));
  if(!result)return;
- document.querySelector('#modelBadge').textContent=result.mode;state.bonds[id]=Math.min(99,state.bonds[id]+Mystery.award('yepusa|'+id,q));renderNPCs();add(p.name,result.answer);
+ document.querySelector('#modelBadge').textContent=result.mode;state.bonds[id]=Math.min(99,state.bonds[id]+Mystery.award('yepusa|'+id,q));renderNPCs();add(p.name,result.answer);Investigation.record(p.name,result.answer,result.mode);
  document.querySelector('#ending').classList.add('show');document.querySelector('#endingText').textContent=`你和${p.name}的关系温度：${state.bonds[id]}。仅预置话题的首次提问会改变关系。`;
 }
 document.querySelector('#composer').onsubmit=e=>{e.preventDefault();const q=input.value.trim();if(q){input.value='';ask(q)}};
 renderScene();
 
 Mystery.status(document.querySelector('#modelBadge'));
+
+Investigation.register({snapshot:()=>({key:'yepusa',title:'野菩萨',phase:SCENES[state.scene].phase+' · '+SCENES[state.scene].title,clues:[]})});

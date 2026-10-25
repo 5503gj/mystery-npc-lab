@@ -104,6 +104,7 @@
     @media (max-width: 1050px) { .layout { grid-template-columns:220px minmax(0,1fr); } .right { grid-column:1 / -1; display:grid; grid-template-columns:1fr 1fr; gap:18px; } }
     @media (max-width: 700px) { .shell { width:calc(100% - 22px); padding-top:16px; } .top-actions .pill { display:none; } .layout { display:block; } .side, .right { margin-bottom:12px; } .right { display:block; } .center { min-height:700px; } .chat { max-height:520px; } }
   </style>
+  <link rel="stylesheet" href="design.css">
 </head>
 <body>
   <div class="shell">
@@ -149,10 +150,11 @@
         <div><h3>线索笔记 <span id="clueCount" style="color:var(--gold);font-weight:400">0/4</span></h3><div class="clues" id="clues"></div></div>
       </aside>
     </main>
-    <div class="foot">本页面为原创剧情结构演示，AI 接入版将增加可配置的人设、记忆、知识权限和多结局。</div>
+    <div class="foot">原创案件互动演示 · 可选本地模型对话 · 调查笔记保留在本次页面会话，请及时导出。</div>
   </div>
   <script src="catalog.js"></script>
 <script src="common.js"></script>
+<script src="investigation.js"></script>
 <script src="index.js"></script>
 </body>
 </html>
