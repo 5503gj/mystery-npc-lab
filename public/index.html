@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>雾岛档案 · AI NPC 剧本游戏</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --panel: rgba(20, 28, 39, .88);
+      --panel-2: #182331;
+      --line: rgba(255,255,255,.09);
+      --text: #e9eef5;
+      --muted: #8e9caf;
+      --cyan: #74d4d5;
+      --gold: #e9ba77;
+      --danger: #e88e9f;
+      --shadow: 0 18px 60px rgba(0,0,0,.28);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; color: var(--text);
+      background: radial-gradient(circle at 78% 4%, rgba(74, 135, 151, .2), transparent 31%),
+                  radial-gradient(circle at 10% 90%, rgba(111, 73, 118, .16), transparent 34%), var(--bg);
+      font: 15px/1.6 Inter, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    .shell { width: min(1440px, calc(100% - 36px)); margin: 0 auto; padding: 28px 0 38px; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:24px; }
+    .brand { display:flex; align-items:center; gap:13px; }
+    .mark { width:42px; height:42px; border-radius:14px; display:grid; place-items:center; color:#102126; background:linear-gradient(145deg, #a8eded, #70c3d0); font-weight:800; box-shadow:0 7px 26px rgba(116,212,213,.2); }
+    h1, h2, h3, p { margin:0; }
+    h1 { font-size:20px; letter-spacing:.02em; }
+    .subtitle { font-size:12px; color:var(--muted); margin-top:2px; }
+    .top-actions { display:flex; align-items:center; gap:10px; }
+    .pill { display:inline-flex; align-items:center; gap:7px; padding:7px 11px; border:1px solid var(--line); border-radius:999px; color:#b6c3d1; background:rgba(255,255,255,.035); font-size:12px; }
+    .dot { width:7px; height:7px; border-radius:50%; background:#79e0a1; box-shadow:0 0 12px #79e0a1; }
+    .layout { display:grid; grid-template-columns: 260px minmax(420px, 1fr) 300px; gap:16px; align-items:stretch; }
+    .panel { background:var(--panel); border:1px solid var(--line); border-radius:22px; box-shadow:var(--shadow); backdrop-filter: blur(14px); }
+    .side { padding:20px; }
+    .eyebrow { color:var(--cyan); font-size:11px; letter-spacing:.13em; text-transform:uppercase; margin-bottom:8px; }
+    .case-title { font-size:23px; line-height:1.25; margin-bottom:10px; }
+    .description { color:var(--muted); font-size:13px; }
+    .divider { height:1px; background:var(--line); margin:20px 0; }
+    .case-strip { margin-bottom:16px; padding:16px 18px; display:flex; align-items:center; gap:20px; }
+    .case-strip .eyebrow { margin:0 0 2px; }
+    .case-strip h2 { font-size:15px; white-space:nowrap; }
+    .case-tabs { display:flex; gap:9px; flex:1; overflow:auto; padding:2px 0; }
+    .case-tab { min-width:180px; text-align:left; border:1px solid var(--line); background:#151f2b; color:#b9c7d5; border-radius:14px; padding:10px 12px; transition:.2s; }
+    .case-tab strong { display:block; font-size:13px; color:#dfe8ef; }
+    .case-tab span { display:block; font-size:11px; color:var(--muted); margin-top:2px; }
+    .case-tab.active { border-color:rgba(116,212,213,.65); background:rgba(116,212,213,.1); box-shadow:0 0 0 3px rgba(116,212,213,.05); }
+    .model-badge { white-space:nowrap; color:#b9d9c7; border:1px solid rgba(121,224,161,.22); background:rgba(121,224,161,.06); padding:8px 10px; border-radius:11px; font-size:11px; }
+    .model-badge.local { color:#f0cc92; border-color:rgba(233,186,119,.3); background:rgba(233,186,119,.06); }
+    .phase { display:flex; align-items:center; gap:10px; margin:12px 0; color:var(--muted); font-size:13px; }
+    .phase i { width:22px; height:22px; border:1px solid #425265; color:#93a5b8; border-radius:50%; display:grid; place-items:center; font-style:normal; font-size:11px; }
+    .phase.active { color:var(--text); }
+    .phase.active i { color:#142324; background:var(--cyan); border-color:var(--cyan); }
+    .tip { padding:13px; color:#b8c5d2; font-size:12px; background:rgba(116,212,213,.06); border:1px solid rgba(116,212,213,.14); border-radius:14px; }
+    .center { display:flex; flex-direction:column; min-height:680px; overflow:hidden; }
+    .scene-head { padding:20px 22px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .scene-head h2 { font-size:16px; }
+    .scene-head p { color:var(--muted); font-size:12px; margin-top:3px; }
+    .chapter { color:var(--gold); font-size:12px; white-space:nowrap; }
+    .chat { padding:22px; flex:1; overflow:auto; max-height:470px; }
+    .message { display:flex; gap:11px; margin:0 0 18px; max-width:90%; animation:up .22s ease both; }
+    .message.user { margin-left:auto; flex-direction:row-reverse; }
+    .avatar { width:34px; height:34px; flex:none; border-radius:12px; display:grid; place-items:center; color:#18222b; font-weight:800; background:#adc6d9; }
+    .avatar.npc { background:linear-gradient(145deg, #e9ba77, #c88675); }
+    .bubble { padding:11px 14px; border:1px solid var(--line); border-radius:5px 16px 16px 16px; background:#17212d; color:#dae2ea; font-size:14px; }
+    .user .bubble { border-radius:16px 5px 16px 16px; background:#22414b; border-color:rgba(116,212,213,.17); }
+    .speaker { font-size:11px; color:var(--muted); margin-bottom:3px; }
+    .user .speaker { text-align:right; }
+    .quick { padding:0 22px 14px; display:flex; gap:8px; flex-wrap:wrap; }
+    .quick button, .choice { border:1px solid var(--line); background:#1a2634; color:#c5d2df; padding:8px 11px; border-radius:10px; font-size:12px; transition:.2s; }
+    .quick button:hover, .choice:hover { border-color:var(--cyan); color:var(--text); transform:translateY(-1px); }
+    .composer { padding:16px 22px 20px; border-top:1px solid var(--line); display:flex; gap:9px; }
+    .composer input { min-width:0; flex:1; border:1px solid var(--line); border-radius:13px; padding:12px 14px; outline:none; color:var(--text); background:#101923; }
+    .composer input:focus { border-color:rgba(116,212,213,.55); box-shadow:0 0 0 3px rgba(116,212,213,.08); }
+    .send { border:0; border-radius:13px; padding:0 17px; color:#102126; font-weight:700; background:var(--cyan); }
+    .right h3 { font-size:14px; margin-bottom:12px; }
+    .npc-card { display:flex; gap:11px; align-items:center; padding:11px 0; border-bottom:1px solid var(--line); }
+    .npc-card:last-child { border:0; }
+    .npc-card .avatar { width:30px; height:30px; border-radius:10px; font-size:12px; }
+    .npc-name { font-size:13px; }
+    .npc-role { color:var(--muted); font-size:11px; }
+    .meter { margin-left:auto; width:55px; height:5px; border-radius:99px; background:#293544; overflow:hidden; }
+    .meter b { display:block; height:100%; background:var(--gold); border-radius:99px; }
+    .clues { display:grid; gap:8px; }
+    .clue { padding:11px 12px; border:1px solid var(--line); border-radius:13px; background:rgba(255,255,255,.025); }
+    .clue strong { display:block; color:#f1d39f; font-size:12px; margin-bottom:3px; }
+    .clue span { color:var(--muted); font-size:11px; }
+    .clue.locked { opacity:.45; filter:grayscale(.6); }
+    .ending { display:none; margin:0 22px 18px; padding:16px; border-radius:15px; border:1px solid rgba(233,186,119,.3); background:rgba(233,186,119,.08); }
+    .ending.show { display:block; animation:up .25s ease both; }
+    .ending h3 { color:var(--gold); margin-bottom:6px; }
+    .ending p { color:#d0d8df; font-size:13px; }
+    .guess { margin-top:10px; display:flex; gap:7px; flex-wrap:wrap; }
+    .guess button { border:1px solid rgba(233,186,119,.32); background:transparent; color:#efd19e; padding:7px 10px; border-radius:9px; font-size:12px; }
+    .guess button:hover { background:rgba(233,186,119,.12); }
+    .foot { margin-top:18px; color:#718096; font-size:11px; text-align:center; }
+    @keyframes up { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+    @media (max-width: 1050px) { .layout { grid-template-columns:220px minmax(0,1fr); } .right { grid-column:1 / -1; display:grid; grid-template-columns:1fr 1fr; gap:18px; } }
+    @media (max-width: 700px) { .shell { width:calc(100% - 22px); padding-top:16px; } .top-actions .pill { display:none; } .layout { display:block; } .side, .right { margin-bottom:12px; } .right { display:block; } .center { min-height:700px; } .chat { max-height:520px; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand"><div class="mark">雾</div><div><h1>雾岛档案</h1><div class="subtitle">AI NPC 剧本游戏实验室 · 原创 Demo 01</div></div></div>
+      <div class="top-actions"><span class="pill"><i class="dot"></i>离线演示模式</span><span class="pill">案件进度 <b id="progress">1 / 4</b></span></div>
+    </header>
+
+    <section class="panel case-strip">
+      <div><div class="eyebrow">choose a case</div><h2>选择案件</h2></div>
+      <div class="case-tabs" id="caseTabs"></div>
+      <div class="model-badge" id="modelBadge" aria-live="polite">规则引擎 · 可玩</div>
+    </section>
+
+    <main class="layout">
+      <aside class="panel side">
+        <div class="eyebrow">case file 07</div>
+        <h2 class="case-title" id="caseTitle">第七份录音</h2>
+        <p class="description" id="caseDescription">暴雨封锁了雾岛。研究站的档案录音在停电后消失，三个人都说自己没有进入灯塔。</p>
+        <div class="divider"></div>
+        <div class="eyebrow">investigation</div>
+        <div class="phase active" id="phase1"><i>1</i>自由询问</div>
+        <div class="phase" id="phase2"><i>2</i>收集线索</div>
+        <div class="phase" id="phase3"><i>3</i>锁定嫌疑人</div>
+        <div class="phase" id="phase4"><i>4</i>提交结论</div>
+        <div class="divider"></div>
+        <div class="tip">提示：先询问 NPC，再点击下方快捷调查。出现足够线索后，可以在结论区选择你认为的嫌疑人。</div>
+      </aside>
+
+      <section class="panel center">
+        <div class="scene-head"><div><h2 id="sceneLocation">灯塔会客厅</h2><p id="sceneTime">21:52 · 停电后的第十二分钟</p></div><div class="chapter" id="sceneChapter">序章 / 访谈</div></div>
+        <div class="chat" id="chat"></div>
+        <div class="ending" id="ending"><h3 id="endingTitle"></h3><p id="endingText"></p><div class="guess" id="guessButtons"></div></div>
+        <div class="quick"><button data-action="key">检查生锈钥匙</button><button data-action="footprint">查看湿脚印</button><button data-action="log">核对渡船记录</button><button data-action="recorder">询问第七份录音</button></div>
+        <form class="composer" id="composer"><input id="input" maxlength="1000" autocomplete="off" placeholder="输入问题，例如：你在停电时在哪里？" /><button class="send">发送</button></form>
+      </section>
+
+      <aside class="panel side right">
+        <div><h3>NPC 档案</h3>
+          <div id="npcList"></div>
+        </div>
+        <div class="divider"></div>
+        <div><h3>线索笔记 <span id="clueCount" style="color:var(--gold);font-weight:400">0/4</span></h3><div class="clues" id="clues"></div></div>
+      </aside>
+    </main>
+    <div class="foot">本页面为原创剧情结构演示，AI 接入版将增加可配置的人设、记忆、知识权限和多结局。</div>
+  </div>
+  <script src="catalog.js"></script>
+<script src="common.js"></script>
+<script src="index.js"></script>
+</body>
+</html>
