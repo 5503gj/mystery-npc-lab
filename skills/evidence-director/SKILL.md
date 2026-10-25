@@ -16,3 +16,5 @@ description: "维护 Mystery NPC Lab 的证据工作台、人物对话和可追�
 5. 验证用 python -m unittest discover -s tests -v 及 npm run test:browser，浏览器覆盖三页、恶意文本、切案和调查结果来源。
 
 6. 角色和剧本第三方授权状态见README，新增公开内容要记录来源；按已有用户请求的范围更新GitHub。
+
+在线版入口与构建见docs/ONLINE.md。浏览器和服务版本共用核心；修改后运行npm run test:online，保留以上在线能力边界，不把浏览器会话标成云端同步。

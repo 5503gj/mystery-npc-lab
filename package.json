@@ -1,6 +1,12 @@
 {
   "name": "mystery-npc-lab-tests",
   "private": true,
-  "scripts": { "test": "node --test tests/investigation.test.cjs", "test:browser": "node tests/browser.cjs && node tests/workspace.cjs" },
-  "devDependencies": { "playwright": "1.64.1" }
+  "scripts": {
+    "test": "node --test tests/investigation.test.cjs",
+    "test:browser": "node tests/browser.cjs && node tests/workspace.cjs",
+    "test:online": "node tests/online.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.64.1"
+  }
 }

@@ -16,8 +16,8 @@ window.Mystery = (() => {
       this.busy=true;const key=this.key,version=++this.version;
       const controller=this.controller=new AbortController();
       const timeout=setTimeout(()=>controller.abort(),10000);
-      let answer='',mode='规则模式（模型未可用）';
-      try{
+      let answer='',mode=window.MYSTERY_STATIC?'在线规则模式':'规则模式（模型未可用）';
+      if(!window.MYSTERY_STATIC)try{
         if(!this.sessionReady){
           const session=await fetch('/api/session',{method:'POST',signal:controller.signal});
           if(!session.ok)throw new Error('session');this.sessionReady=true;
@@ -30,6 +30,7 @@ window.Mystery = (() => {
         if(data.ok&&typeof data.answer==='string'&&data.answer.trim()) {answer=data.answer.trim();mode='本地模型';}
       }catch(_){/* fallback remains visible to the user */}
       finally{clearTimeout(timeout);if(version===this.version)this.busy=false;}
+      if(window.MYSTERY_STATIC){clearTimeout(timeout);if(version===this.version)this.busy=false;}
       if(this.key!==key||version!==this.version)return null;
       if(!answer)answer=fallback();
       const history=this.histories.get(key)||[];
@@ -48,6 +49,7 @@ window.Mystery = (() => {
     seen.add(q);awards.set(key,seen);return /尊重|选择/.test(q)?2:1;
   }
   async function status(element){
+    if(window.MYSTERY_STATIC){element.textContent='在线规则模式 · 无需安装';return;}
     try{const r=await fetch('/api/status');const d=await r.json();element.textContent=d.ollama?'本地模型可用':'规则模式（模型不可用）';}
     catch(_){element.textContent='规则模式（本地服务未连接）';}
   }
